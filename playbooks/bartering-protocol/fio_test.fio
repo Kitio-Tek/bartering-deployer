@@ -1,35 +1,25 @@
-# FIO configuration for creating fragmented files and measuring I/O performance
 [global]
-ioengine=libaio
-direct=0 # Changed to 0 to use the OS buffer cache, allowing visibility of files on disk
-size=400MB
-runtime=60
-time_based
-sync=0 # Set to 0 for asynchronous operations, change to 1 if synchronous is needed
-numjobs=1
-filename=fio_test_file
-directory=./data
+ioengine=libaio         ; Linux native asynchronous I/O
+direct=1                ; Use non-buffered I/O
+size=10M                ; Total size of I/O for each thread
+runtime=60              ; Run each job for 1 minute (60 seconds)
+time_based              ; Run for the full runtime instead of until the size is reached
+iodepth=32              ; Number of I/O operations to keep in flight
+filename=fio_test_file  ; Name of the test file
+directory=./data        ; Directory to store the test files
 
-[fragmented-file-creation]
-stonewall
+[job_read]
+bs=4k                   ; Block size set to 4KB
+rw=read                 ; Perform sequential read operations
+
+[job_write]
 bs=4k
-bssplit=4k/32:128k/1
-rw=write
-loops=25
+rw=write                ; Perform sequential write operations
 
-[sequential-io]
-stonewall
-bs=128k
-rw=read
+[job_randread]
+bs=4k
+rw=randread             ; Perform random read operations
 
-[stride-io]
-stonewall
-bs=128k
-rw=read
-offset_increment=288k # Corrected from stride_size to offset_increment
-
-[random-io]
-stonewall
-bs=32k
-rw=randread
-size=100M
+[job_randwrite]
+bs=4k
+rw=randwrite            ; Perform random write operations

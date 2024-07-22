@@ -12,6 +12,7 @@ import socket
 from is_network_up import get_targets, hit_target
 from machine_test_starter import ping_machines_to_start
 import time
+import random
 
 
 ## TODO GENERATE SWARM KEY !!!
@@ -141,24 +142,48 @@ with open("./playbooks/bartering-protocol/ips.txt","w") as f:
 
 print("\n ips.txt file for bartering bootstrap written in playbooks/bartering-protocol \n")
 
+
+
+# Assign Node Profiles based on the specified percentages
+num_benefactors = int(0.10 * nodes_needed)  # 10% Benefactors
+num_peers = int(0.40 * nodes_needed)        # 40% Peers
+num_peepers = nodes_needed - num_benefactors - num_peers
+
+profiles = ["benefactor"] * num_benefactors + ["peer"] * num_peers + ["peeper"] * num_peepers
+random.shuffle(profiles)
+
+# Assign profiles to hosts
+host_profiles = dict(zip(available_hosts, profiles))
+
+# Print assigned profiles for each host
+for host, profile in host_profiles.items():
+    print(f"Node {host} has been assigned the profile: {profile}")
+
+print("\n")
+bootstrap_profile = host_profiles[bootstrap_node]
+
+
+
+
 available_hosts.remove(bootstrap_node)
+
 
 
 print("Building hosts.ini file ...")
 
-with open("hosts/hosts.ini","w") as f:
+with open("hosts/hosts.ini", "w") as f:
     ip_address = socket.gethostbyname(bootstrap_node)
-    f.write(f"[Bootstrap-node]\n{username}@{bootstrap_node} label=bootstrap label_ip={bootstrap_node} ip_address={ip_address}\n")
-    f.write('\n')
+    f.write(f"[Bootstrap-node]\n{username}@{bootstrap_node} label=bootstrap label_ip={bootstrap_node} ip_address={ip_address} node_profile={bootstrap_profile}\n\n")
     f.write(f"[IPFS-nodes]\n")
-    n = 0
     for host in available_hosts:
         ip_address = socket.gethostbyname(host)
-        f.write(f"{username}@{host} label=node{n} label_ip={host} ip_address={ip_address}\n")
-        n +=1 
-    f.write('\n')
+        profile = host_profiles[host]
+        f.write(f"{username}@{host} label=node label_ip={host} ip_address={ip_address} node_profile={profile}\n\n")
 
 print("\n\033[0;32mhosts.ini file successfully built!\033[0m\n")
+    
+    
+    
     
 available_hosts.append(bootstrap_node)
 

@@ -18,10 +18,13 @@ def submit_job_and_only_job(gk, site, timeout, number_of_nodes, env, res_duratio
     site = gk.sites[site]
 
      # Modify the properties to include the specific clusters in Lyon
-    clusters = ["gemini", "neowise", "nova", "orion", "pyxis", "sagittaire", "sirius", "taurus"]
-    cluster_conditions = " OR ".join([f"cluster='{cluster}'" for cluster in clusters])
-    properties = f"({cluster_conditions})"
 
+     # Define the cluster of interest
+    cluster_of_interest = "taurus"
+
+     # Set properties to only include the 'taurus' cluster
+    properties = f"(cluster='{cluster_of_interest}')"
+    
      # Convert res_duration from "HH:MM:SS" to total seconds
     parts = res_duration.split(':')
     if len(parts) == 3:
@@ -61,10 +64,16 @@ def submit_job_and_only_job_res(gk, site, number_of_nodes, env, res_duration, st
 
     site_obj = gk.sites[site]
 
-    # Modify the properties to include the specific clusters in Lyon
-    clusters = ["gemini", "neowise", "nova", "orion", "pyxis", "sagittaire", "sirius", "taurus"]
-    cluster_conditions = " OR ".join([f"cluster='{cluster}'" for cluster in clusters])
-    properties = f"({cluster_conditions})"
+    
+    
+     # Modify the properties to include the specific clusters in Lyon
+
+     # Modify the properties to include the specific nodes in the 'taurus' cluster
+    nodes_of_interest = ["taurus-1", "taurus-5", "taurus-6", "taurus-10"]
+    nodes_property = " or ".join([f"network_address='{node}'" for node in nodes_of_interest])
+
+        # Set properties to include only the specified nodes
+    properties = f"(cluster='taurus' and ({nodes_property}))"
     
      # Convert res_duration from "HH:MM:SS" to total seconds
     parts = res_duration.split(':')
@@ -179,6 +188,9 @@ def reserve_nodes(site, cluster, timeout, number_of_nodes, command):
     assigned_nodes = job_info["assigned_nodes"]
 
     return assigned_nodes
+
+
+
 
 
 
